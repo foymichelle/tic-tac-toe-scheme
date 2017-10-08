@@ -25,6 +25,13 @@
     (newline)))
 
 ;; Make a move on board fns
+(define (valid-move? cell board)
+  (let ((valid-cells (free-cells board)))
+    (cond
+      ((not (number? cell)) #f)
+      ((not (member cell valid-cells)) #f)
+      (else #t))))
+
 (define (replace-row token cell row)
   (cond
     ((null? row) '())
@@ -32,7 +39,9 @@
     (else (cons (car row) (replace-row token cell (cdr row))))))
 
 (define (make-move token cell board)
-  (map (lambda (row) (replace-row token cell row)) board))
+  (if (valid-move? cell board)
+      (map (lambda (row) (replace-row token cell row)) board)
+      '()))
 
 ;; Player interaction fns
 (define (free-cell? cell board)
@@ -106,10 +115,25 @@
     (display-board board)
     (let ((x-board (x-play board)))
       (cond
-        ((winner? x-board) (display "X wins!"))
-        ((draw? x-board) (display "It's a draw!"))
+        ((empty? x-board)
+         (begin (display "Invalid input. Try again.")
+                (play board)))
+        ((winner? x-board)
+         (begin
+           (display-board x-board)
+           (display "X wins!")))
+        ((draw? x-board)
+         (begin
+           (display-board x-board)
+           (display "It's a draw!")))
         (else (let ((o-board (o-play x-board)))
                 (cond
-                  ((winner? o-board) (display "O wins!"))
-                  ((draw? o-board) (display "It's a draw!"))
+                  ((winner? o-board)
+                   (begin
+                     (display-board o-board)
+                     (display "O wins!")))
+                  ((draw? o-board)
+                   (begin
+                     (display-board o-board)
+                     (display "It's a draw!")))
                   (else (play o-board)))))))))
